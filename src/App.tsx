@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { TabName, EntryType } from './types';
+import type { TabName, EntryType, IncomeEntry, ExpenseEntry } from './types';
 import { useAppState } from './hooks/useAppState';
 import { emptyMonthData, getMonthOptions, getCurrentMonthKey, monthKeyToNumber } from './utils/helpers';
 import { exportToPDF } from './utils/exportPDF';
@@ -67,18 +67,61 @@ export default function App() {
   // Income actions
   const addIncome = (name: string, amount: number, type: EntryType) => {
     const sourceId = Date.now();
-    setMd({ incomes: [...md.incomes, { id: Date.now() + Math.random(), sourceId, name, amount, type }] });
+    const newEntry = { id: Date.now() + Math.random(), sourceId, name, amount, type };
+    setState(s => {
+      const monthData = { ...s.monthData };
+      const current = monthData[monthKey] ?? emptyMonthData();
+      monthData[monthKey] = { ...current, incomes: [...current.incomes, newEntry] };
+
+      if (type === 'fixed') {
+        Object.entries(monthData).forEach(([key, month]) => {
+          if (monthKeyToNumber(key) <= monthKeyToNumber(monthKey)) return;
+          const entryExists = month.incomes.some(e => (e.sourceId ?? e.id) === sourceId);
+          if (!entryExists) {
+            monthData[key] = { ...month, incomes: [...month.incomes, { ...newEntry, id: Date.now() + Math.random() }] };
+          }
+        });
+      }
+
+      return { ...s, monthData };
+    });
   };
 
   const editIncome = (id: number, name: string, amount: number, type: EntryType, endMonth?: string) =>
-    setMd({ incomes: md.incomes.map(e => e.id === id ? {
-      ...e,
-      name,
-      amount,
-      type,
-      endMonth: type === 'fixed' ? endMonth : undefined,
-      sourceId: e.sourceId ?? e.id,
-    } : e) });
+    setState(s => {
+      const existing = s.monthData[monthKey] ?? emptyMonthData();
+      const target = existing.incomes.find(e => e.id === id);
+      if (!target) return s;
+      const sourceId = target.sourceId ?? target.id;
+      const currentMonthValue = monthKeyToNumber(monthKey);
+      const updatedEntry: IncomeEntry = {
+        ...target,
+        name,
+        amount,
+        type,
+        endMonth: type === 'fixed' ? endMonth : undefined,
+        sourceId,
+      };
+
+      return {
+        ...s,
+        monthData: Object.fromEntries(Object.entries(s.monthData).map(([key, month]) => {
+          const monthValue = monthKeyToNumber(key);
+          return [key, {
+            ...month,
+            incomes: month.incomes.flatMap(e => {
+              const entrySourceId = e.sourceId ?? e.id;
+              const matchesSource = entrySourceId === sourceId;
+              if (monthValue === currentMonthValue) {
+                return e.id === id ? [updatedEntry] : [e];
+              }
+              if (!matchesSource) return [e];
+              return type === 'fixed' ? [{ ...e, ...updatedEntry, id: e.id }] : [];
+            }),
+          }];
+        })),
+      };
+    });
 
   const delIncome = (id: number) =>
     setMd({ incomes: md.incomes.filter(e => e.id !== id) });
@@ -119,19 +162,62 @@ export default function App() {
   // Expense actions
   const addExpense = (name: string, amount: number, catId: string, type: EntryType) => {
     const sourceId = Date.now();
-    setMd({ expenses: [...md.expenses, { id: Date.now() + Math.random(), sourceId, name, amount, catId, type }] });
+    const newEntry = { id: Date.now() + Math.random(), sourceId, name, amount, catId, type };
+    setState(s => {
+      const monthData = { ...s.monthData };
+      const current = monthData[monthKey] ?? emptyMonthData();
+      monthData[monthKey] = { ...current, expenses: [...current.expenses, newEntry] };
+
+      if (type === 'fixed') {
+        Object.entries(monthData).forEach(([key, month]) => {
+          if (monthKeyToNumber(key) <= monthKeyToNumber(monthKey)) return;
+          const entryExists = month.expenses.some(e => (e.sourceId ?? e.id) === sourceId);
+          if (!entryExists) {
+            monthData[key] = { ...month, expenses: [...month.expenses, { ...newEntry, id: Date.now() + Math.random() }] };
+          }
+        });
+      }
+
+      return { ...s, monthData };
+    });
   };
 
   const editExpense = (id: number, name: string, amount: number, catId: string, type: EntryType, endMonth?: string) =>
-    setMd({ expenses: md.expenses.map(e => e.id === id ? {
-      ...e,
-      name,
-      amount,
-      catId,
-      type,
-      endMonth: type === 'fixed' ? endMonth : undefined,
-      sourceId: e.sourceId ?? e.id,
-    } : e) });
+    setState(s => {
+      const existing = s.monthData[monthKey] ?? emptyMonthData();
+      const target = existing.expenses.find(e => e.id === id);
+      if (!target) return s;
+      const sourceId = target.sourceId ?? target.id;
+      const currentMonthValue = monthKeyToNumber(monthKey);
+      const updatedEntry: ExpenseEntry = {
+        ...target,
+        name,
+        amount,
+        catId,
+        type,
+        endMonth: type === 'fixed' ? endMonth : undefined,
+        sourceId,
+      };
+
+      return {
+        ...s,
+        monthData: Object.fromEntries(Object.entries(s.monthData).map(([key, month]) => {
+          const monthValue = monthKeyToNumber(key);
+          return [key, {
+            ...month,
+            expenses: month.expenses.flatMap(e => {
+              const entrySourceId = e.sourceId ?? e.id;
+              const matchesSource = entrySourceId === sourceId;
+              if (monthValue === currentMonthValue) {
+                return e.id === id ? [updatedEntry] : [e];
+              }
+              if (!matchesSource) return [e];
+              return type === 'fixed' ? [{ ...e, ...updatedEntry, id: e.id }] : [];
+            }),
+          }];
+        })),
+      };
+    });
 
   const delExpense = (id: number) =>
     setMd({ expenses: md.expenses.filter(e => e.id !== id) });
