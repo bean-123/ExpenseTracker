@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { AppState } from '../types';
+import type { AppState } from '../types';
 import { DEFAULT_CATEGORIES } from '../utils/constants';
 
 const STORAGE_KEY = 'budgetapp_v3';

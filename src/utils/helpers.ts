@@ -1,5 +1,5 @@
 import { MONTHS } from './constants';
-import { MonthData } from '../types';
+import type { MonthData } from '../types';
 
 export function fmt(amount: number, currency: string): string {
   return `${currency}${Math.abs(Math.round(amount)).toLocaleString()}`;

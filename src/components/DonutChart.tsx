@@ -1,6 +1,5 @@
-import React, { useRef, useEffect } from 'react';
-import { Category, ExpenseEntry } from '../types';
-import { fmt } from '../utils/helpers';
+import { useRef, useEffect } from 'react';
+import type { Category, ExpenseEntry } from '../types';
 
 interface Props {
   expenses: ExpenseEntry[];
@@ -8,7 +7,7 @@ interface Props {
   currency: string;
 }
 
-export const DonutChart: React.FC<Props> = ({ expenses, categories, currency }) => {
+export const DonutChart: React.FC<Props> = ({ expenses, categories }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const catTotals: Record<string, number> = {};

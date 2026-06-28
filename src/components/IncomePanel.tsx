@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { IncomeEntry, EntryType } from '../types';
+import type { IncomeEntry, EntryType } from '../types';
 import { fmt } from '../utils/helpers';
 
 interface Props {

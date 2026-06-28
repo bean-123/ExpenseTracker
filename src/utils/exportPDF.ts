@@ -1,5 +1,4 @@
-import { MonthData, Category } from '../types';
-import { COLOR_DARK } from './constants';
+import type { MonthData, Category } from '../types';
 import { fmt, getMonthLabel } from './helpers';
 
 export async function exportToPDF(

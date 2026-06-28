@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { TabName, EntryType } from './types';
+import { useState } from 'react';
+import type { TabName, EntryType } from './types';
 import { useAppState } from './hooks/useAppState';
 import { emptyMonthData, getMonthOptions, getCurrentMonthKey } from './utils/helpers';
 import { exportToPDF } from './utils/exportPDF';

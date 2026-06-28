@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Category, ExpenseEntry } from '../types';
+import type { Category, ExpenseEntry } from '../types';
 import { EMOJIS, PALETTE_COLORS, COLOR_DARK } from '../utils/constants';
 import { fmt } from '../utils/helpers';
 
