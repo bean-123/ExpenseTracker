@@ -7,8 +7,10 @@ interface Props {
   expenses: ExpenseEntry[];
   categories: Category[];
   currency: string;
+  currentMonthKey: string;
   onAdd: (name: string, amount: number, catId: string, type: EntryType) => void;
-  onEdit: (id: number, name: string, amount: number, catId: string, type: EntryType) => void;
+  onEdit: (id: number, name: string, amount: number, catId: string, type: EntryType, endMonth?: string) => void;
+  onEndThisMonth: (id: number, endMonth: string) => void;
   onDelete: (id: number) => void;
 }
 
@@ -18,10 +20,11 @@ interface EditState {
   amount: string;
   catId: string;
   type: EntryType;
+  endMonth?: string;
 }
 
 export const ExpensePanel: React.FC<Props> = ({
-  expenses, categories, currency, onAdd, onEdit, onDelete,
+  expenses, categories, currency, currentMonthKey, onAdd, onEdit, onEndThisMonth, onDelete,
 }) => {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
@@ -41,13 +44,13 @@ export const ExpensePanel: React.FC<Props> = ({
     if (!editing) return;
     const amt = parseFloat(editing.amount);
     if (!editing.name.trim() || isNaN(amt) || amt <= 0) return;
-    onEdit(editing.id, editing.name.trim(), amt, editing.catId, editing.type);
+    onEdit(editing.id, editing.name.trim(), amt, editing.catId, editing.type, editing.type === 'fixed' ? editing.endMonth : undefined);
     setEditing(null);
   };
 
   const startEdit = (e: ExpenseEntry) => {
     setOpen(false);
-    setEditing({ id: e.id, name: e.name, amount: String(e.amount), catId: e.catId, type: e.type });
+    setEditing({ id: e.id, name: e.name, amount: String(e.amount), catId: e.catId, type: e.type, endMonth: e.endMonth });
   };
 
   return (
@@ -111,11 +114,21 @@ export const ExpensePanel: React.FC<Props> = ({
                   <span className={`pill ${e.type === 'fixed' ? 'pill-fixed' : 'pill-onetime'}`}>
                     {e.type === 'fixed' ? 'Monthly' : 'One-time'}
                   </span>
+                  {e.type === 'fixed' && e.endMonth === currentMonthKey && (
+                    <span className="entry-note">Ends this month</span>
+                  )}
                   <span className="entry-amount">{fmt(e.amount, currency)}</span>
                   <button className="edit-btn" onClick={() => startEdit(e)}
                     aria-label={`Edit ${e.name}`}>✏️</button>
                   <button className="del-btn" onClick={() => onDelete(e.id)}
                     aria-label={`Remove ${e.name}`}>🗑</button>
+                  {e.type === 'fixed' && e.endMonth !== currentMonthKey && (
+                    <button type="button" className="pill-btn btn-cancel end-btn"
+                      title="Stop this monthly expense after the current month"
+                      onClick={() => onEndThisMonth(e.id, currentMonthKey)}>
+                      Ends this month
+                    </button>
+                  )}
                 </div>
                 {editing?.id === e.id && (
                   <div className="add-form edit-form">

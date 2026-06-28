@@ -386,6 +386,21 @@ body {
 .edit-btn:hover {
   color: var(--blue-dark);
 }
+.end-btn {
+  padding: 4px 10px;
+  font-size: 11px;
+  min-width: 0;
+  height: 26px;
+  border-radius: 14px;
+}
+.end-btn:hover {
+  filter: brightness(0.95);
+}
+.entry-note {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-left: 6px;
+}
 .edit-form {
   border-color: var(--blue-mid);
   background: #f0f9ff;

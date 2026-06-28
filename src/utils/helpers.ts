@@ -27,6 +27,11 @@ export function getMonthLabel(key: string): string {
   return `${MONTHS[month - 1]} ${year}`;
 }
 
+export function monthKeyToNumber(key: string): number {
+  const [year, month] = key.split('-').map(Number);
+  return year * 100 + month;
+}
+
 export function emptyMonthData(): MonthData {
   return { incomes: [], expenses: [], savingsGoal: 0 };
 }

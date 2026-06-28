@@ -2,17 +2,21 @@ export type EntryType = 'fixed' | 'onetime';
 
 export interface IncomeEntry {
   id: number;
+  sourceId?: number;
   name: string;
   amount: number;
   type: EntryType;
+  endMonth?: string;
 }
 
 export interface ExpenseEntry {
   id: number;
+  sourceId?: number;
   name: string;
   amount: number;
   catId: string;
   type: EntryType;
+  endMonth?: string;
 }
 
 export interface Category {
