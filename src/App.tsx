@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { TabName, EntryType } from './types';
 import { useAppState } from './hooks/useAppState';
 import { emptyMonthData, getMonthOptions, getCurrentMonthKey } from './utils/helpers';
@@ -26,19 +26,60 @@ export default function App() {
       monthData: { ...s.monthData, [monthKey]: { ...md, ...patch } },
     }));
 
-  const totalIn  = md.incomes.reduce((a, e) => a + e.amount, 0);
-  const totalEx  = md.expenses.reduce((a, e) => a + e.amount, 0);
-  const left     = totalIn - totalEx;
+  // Auto-carry fixed entries from the previous month into any month that has no data yet
+  useEffect(() => {
+    if (state.monthData[monthKey]) return; // already has data, don't overwrite
+
+    // Find the most recent month that has data
+    const allKeys = Object.keys(state.monthData).sort();
+    if (allKeys.length === 0) return;
+    const prevKey = allKeys[allKeys.length - 1];
+    const prevMd = state.monthData[prevKey];
+
+    const carriedIncomes = prevMd.incomes
+      .filter(e => e.type === 'fixed')
+      .map(e => ({ ...e, id: Date.now() + Math.random() }));
+
+    const carriedExpenses = prevMd.expenses
+      .filter(e => e.type === 'fixed')
+      .map(e => ({ ...e, id: Date.now() + Math.random() }));
+
+    if (carriedIncomes.length === 0 && carriedExpenses.length === 0) return;
+
+    setState(s => ({
+      ...s,
+      monthData: {
+        ...s.monthData,
+        [monthKey]: {
+          incomes: carriedIncomes,
+          expenses: carriedExpenses,
+          savingsGoal: prevMd.savingsGoal,
+        },
+      },
+    }));
+  }, [monthKey]);
+
+  const totalIn = md.incomes.reduce((a, e) => a + e.amount, 0);
+  const totalEx = md.expenses.reduce((a, e) => a + e.amount, 0);
+  const left    = totalIn - totalEx;
 
   // Income actions
   const addIncome = (name: string, amount: number, type: EntryType) =>
     setMd({ incomes: [...md.incomes, { id: Date.now(), name, amount, type }] });
+
+  const editIncome = (id: number, name: string, amount: number, type: EntryType) =>
+    setMd({ incomes: md.incomes.map(e => e.id === id ? { ...e, name, amount, type } : e) });
+
   const delIncome = (id: number) =>
     setMd({ incomes: md.incomes.filter(e => e.id !== id) });
 
   // Expense actions
   const addExpense = (name: string, amount: number, catId: string, type: EntryType) =>
     setMd({ expenses: [...md.expenses, { id: Date.now(), name, amount, catId, type }] });
+
+  const editExpense = (id: number, name: string, amount: number, catId: string, type: EntryType) =>
+    setMd({ expenses: md.expenses.map(e => e.id === id ? { ...e, name, amount, catId, type } : e) });
+
   const delExpense = (id: number) =>
     setMd({ expenses: md.expenses.filter(e => e.id !== id) });
 
@@ -55,7 +96,7 @@ export default function App() {
     <div className="app">
       {/* Top bar */}
       <div className="top-bar">
-        <div className="app-title">💰 My budget</div>
+        <div className="app-title">💰 MoneyBud</div>
         <div className="top-controls">
           <select className="ctrl-sel" value={monthKey} onChange={e => setMonthKey(e.target.value)}>
             {MONTH_OPTIONS.map(o => <option key={o.key} value={o.key}>{o.label}</option>)}
@@ -94,11 +135,11 @@ export default function App() {
       {/* Tab panels */}
       {tab === 'income' && (
         <IncomePanel incomes={md.incomes} currency={state.currency}
-          onAdd={addIncome} onDelete={delIncome} />
+          onAdd={addIncome} onEdit={editIncome} onDelete={delIncome} />
       )}
       {tab === 'expense' && (
         <ExpensePanel expenses={md.expenses} categories={state.categories}
-          currency={state.currency} onAdd={addExpense} onDelete={delExpense} />
+          currency={state.currency} onAdd={addExpense} onEdit={editExpense} onDelete={delExpense} />
       )}
       {tab === 'categories' && (
         <CategoriesPanel categories={state.categories} expenses={md.expenses}
