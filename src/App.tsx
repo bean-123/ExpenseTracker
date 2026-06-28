@@ -261,6 +261,11 @@ export default function App() {
       ...s,
       categories: [...s.categories, { id: `cat_${Date.now()}`, name, icon, color, builtIn: false }],
     }));
+  const editCategory = (id: string, color: string) =>
+    setState(s => ({
+      ...s,
+      categories: s.categories.map(c => c.id === id ? { ...c, color } : c),
+    }));
   const delCategory = (id: string) =>
     setState(s => ({ ...s, categories: s.categories.filter(c => c.id !== id) }));
 
@@ -317,7 +322,7 @@ export default function App() {
       )}
       {tab === 'categories' && (
         <CategoriesPanel categories={state.categories} expenses={md.expenses}
-          currency={state.currency} onAdd={addCategory} onDelete={delCategory} />
+          currency={state.currency} onAdd={addCategory} onEdit={editCategory} onDelete={delCategory} />
       )}
 
       {/* Bottom row */}

@@ -532,6 +532,43 @@ body {
 .color-dot.sel {
   border-color: #333;
 }
+.color-wheel {
+  width: 100%;
+  height: 42px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  margin-bottom: 12px;
+}
+.cat-edit-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  gap: 8px;
+}
+.cat-edit-label {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.65);
+}
+.cat-color-picker {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 50%;
+  appearance: none;
+  -webkit-appearance: none;
+  background: #fff;
+  cursor: pointer;
+}
+.cat-color-picker::-webkit-color-swatch-wrapper {
+  padding: 0;
+  border-radius: 50%;
+}
+.cat-color-picker::-webkit-color-swatch {
+  border-radius: 50%;
+}
 
 /* ── Bottom row ── */
 .bottom-row {

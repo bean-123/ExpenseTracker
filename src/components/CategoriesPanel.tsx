@@ -8,11 +8,12 @@ interface Props {
   expenses: ExpenseEntry[];
   currency: string;
   onAdd: (name: string, icon: string, color: string) => void;
+  onEdit: (id: string, color: string) => void;
   onDelete: (id: string) => void;
 }
 
 export const CategoriesPanel: React.FC<Props> = ({
-  categories, expenses, currency, onAdd, onDelete,
+  categories, expenses, currency, onAdd, onEdit, onDelete,
 }) => {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
@@ -62,6 +63,10 @@ export const CategoriesPanel: React.FC<Props> = ({
             ))}
           </div>
 
+          <div className="picker-label">Or pick any color</div>
+          <input className="color-wheel" type="color" value={color}
+            onChange={e => setColor(e.target.value)} />
+
           <div className="form-actions">
             <button className="pill-btn btn-lavender" onClick={handleSave}>Create category</button>
             <button className="pill-btn btn-cancel" onClick={() => setOpen(false)}>Cancel</button>
@@ -95,6 +100,11 @@ export const CategoriesPanel: React.FC<Props> = ({
                   <div className="cat-bar-fill" style={{ width: `${pct}%` }} />
                 </div>
               )}
+              <div className="cat-edit-row">
+                <label className="cat-edit-label" htmlFor={`color-${c.id}`}>Change color</label>
+                <input id={`color-${c.id}`} type="color" className="cat-color-picker"
+                  value={c.color} onChange={e => onEdit(c.id, e.target.value)} />
+              </div>
             </div>
           );
         })}
